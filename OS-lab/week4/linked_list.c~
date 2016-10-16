@@ -1,0 +1,136 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+struct node {
+  int x;
+  struct node *next;
+};
+
+struct node * find(struct node *root, int value ) {
+  if (root -> x == value){
+    return root;
+
+  }
+  else {
+    if (root -> next != 0){
+      find ((root -> next), value);
+  
+    }
+    else{
+      struct node *notfound;
+      notfound = (struct node *) malloc( sizeof(struct node) );
+      notfound->next = 0;
+      notfound->x = 100;
+      return notfound;
+
+    }
+
+  }
+
+}
+void printlinkedlist(struct node *root){
+  printf("%d\n",root->x );
+  if (root->next != 0){
+    root = root->next;
+    printlinkedlist(root);
+  }
+
+}
+
+                
+void insert(struct node *root, int pos, int value){
+  int count = 0;
+  int flag = 0;
+  struct node *temp, *new, *curr = root;
+  new = (struct node *) malloc( sizeof(struct node) );
+  if (pos == 0){
+    pos = 1;
+    flag = 1;
+  }
+  while (pos-1 != count){
+    curr = curr->next;
+    count ++;
+  }
+  new->x = value;
+  temp = curr->next;
+  curr->next = new;
+  new->next = temp;
+  if (flag == 1){
+    int t = root->x;
+    root->x = (root->next)->x;
+    (root->next)->x = t;
+  
+  }
+  
+  }
+  
+//delete a node
+void delete(struct node *root, int pos){
+  int count = 0;
+  struct node *temp, *curr = root;
+  if (pos == 0){
+    pos = 1;
+  }
+  while (pos-1 != count){
+    curr = curr->next;
+    count ++;
+  }
+  temp = curr->next;
+  curr->next = (curr->next)->next;
+  free(temp);
+}
+
+
+
+
+// delete entire list
+void delete_all(struct node *root){
+  struct node *temp, *curr = root;
+  while (curr->next != 0){
+    temp = curr->next;
+    free(curr);
+    curr = temp;
+
+  }
+  
+  free(curr);
+
+
+}
+               
+
+int main() 
+{
+    /* This will be the unchanging first node */
+    struct node *root;      
+    struct node *no;
+    struct node *nu;
+    /* Now root points to a node struct */
+    root = (struct node *) malloc( sizeof(struct node) ); 
+    no = (struct node *) malloc( sizeof(struct node) );
+    nu = (struct node *) malloc( sizeof(struct node) );
+    /* The node root points to has its next pointer equal to a null pointer 
+       set */
+    root->next = no;
+    no->next = nu;
+    //nu->next = 0;
+    /* By using the -> operator, you can modify what the node,
+       a pointer, (root in this case) points to. */
+    root->x = 5;
+    no->x = 6;
+    nu->x = 8;
+    struct node *a = find(root,8);
+    printlinkedlist(a);
+    printf("\n");
+    printlinkedlist(root);
+    printf("\n");
+    insert(root,0,10);
+    printlinkedlist(root);
+    printf("\n");
+    insert(root,2,16);
+    printlinkedlist(root);
+    printf("\n");
+    delete(root,2);
+    printlinkedlist(root);
+    delete_all(root);
+}

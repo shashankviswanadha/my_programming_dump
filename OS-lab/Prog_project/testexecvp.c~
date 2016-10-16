@@ -1,0 +1,7 @@
+
+
+
+void main(){
+  char* arg[] = {"ls", "-l", NULL};
+  execvp(arg[0],arg);
+}

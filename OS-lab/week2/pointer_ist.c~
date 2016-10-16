@@ -1,0 +1,100 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+struct node {
+  int x;
+  struct node *next;
+};
+
+
+void printlist(struct node *root){
+  while(root->next != 0){
+    printf("%d\n",root->x );
+    root = root->next;
+
+  }
+  printf("%d\n",root->x);
+
+}
+
+
+
+void insert(struct node *root, int pos, int val){
+  int count = 1;
+  int temporary;
+  int condition = 0;
+  struct node *temp, *new_node, *curr = root;
+  new_node = (struct node *) malloc( sizeof(struct node) );
+  if (pos == 0){
+    pos = 1;
+    condition = 1;
+  }
+  while (pos != count){
+    if(curr->next != 0){
+      curr = curr->next;
+      count ++;
+    }
+    else{
+	printf("Invalid pos");
+        return;
+    }     
+  }
+  new_node->x = val;
+  temp = curr->next;
+  curr->next = new_node;
+  new_node->next = temp;
+  if (condition == 1){
+    temporary = root->x;
+    root->x = (root->next)->x;
+    (root->next)->x = temporary;
+  
+  }
+  
+  }
+
+
+
+void del(struct node *root, int pos){
+  int count = 0;
+  struct node *temp; 
+  struct node *curr = root;
+  if (pos == 0){
+    printf("Cant delete the root node");
+  }
+  while (pos-1 != count){
+    if(curr->next != 0){
+      curr = curr->next;
+      count ++;
+    }
+    else{
+	printf("Invalid pos");
+        return;
+    }
+  }
+  temp = curr->next;
+  curr->next = (curr->next)->next;
+  free(temp);
+}
+
+
+
+
+int main() 
+{
+
+    struct node *root;      
+
+    root = (struct node *) malloc( sizeof(struct node) ); 
+    root->next = 0;
+    root->x = 15;
+    printlist(root);
+    printf("\n");
+    insert(root,1,31);
+    printlinkedlist(root);
+    printf("\n");
+    insert(root,2,15);
+    printlist(root);
+    printf("\n");
+    del(root,2);
+    printlist(root);
+}

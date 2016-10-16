@@ -1,0 +1,11 @@
+#include<stdio.h>
+int add(int a,int b)
+{
+  int c = a + b;
+  return c;
+}
+void main()
+{
+  int c = add(a,b);
+  printf("%d \n", c);
+}

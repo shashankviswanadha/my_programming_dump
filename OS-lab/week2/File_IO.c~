@@ -1,0 +1,62 @@
+#include <stdio.h>
+
+void main()
+{
+  FILE *file_pointer;
+  int array[200];
+  int i;
+  int count;
+  printf("How many numbers to be written\n");
+  scanf("%d",&count);
+  file_pointer = fopen("std_out.txt","w");
+  for (i = 0; i < count; i++){
+    array[j] = i + 1;
+  }
+ 
+  fwrite(array, sizeof(int),sizeof(array), file_pointer);
+  fclose(file_pointer);
+
+
+  int buffer[200];
+  file_pointer = fopen("std_out","r");
+  fread(buffer,sizeof(int),sizeof(buffer), file_pointer);
+  printf("First n numbers wil be printed, Please enter n:\n");
+  scanf("%d",&count);
+  printf("The first n numbers in the file are\n");
+  for (i= 0 ; i < count; i++){ 
+    printf("%d\n", buffer[i]);
+  }
+  fclose(file_pointer);
+
+ 
+  file_pointer = fopen("std_out","w");
+  int l =0;
+  for ( i= 20;i < 26; i++){
+    array[l] = i ;
+    l = l+1;
+  }
+  fwrite(array, sizeof(int),sizeof(array), file_pointer);
+  fclose(file_pointer);
+  
+  int arr[20];
+  int a[10];
+  int num;
+  printf("enter the number, The numbers abve this num wil be printed\n");
+  scanf("%d",&num); 
+  file_pointer = fopen("std_out","r");
+  fread(arr, sizeof(int),sizeof(array), file_pointer);
+  int pntr = 0;
+  for (i= 0 ; i < 16; i++){
+
+    if (arr[i] > num){
+      a[pntr] = arr[i];
+      pntr ++;
+  }
+  }
+  fclose(file_pointer);
+  int len = sizeof(a)/sizeof(int);
+  printf("The numbers in the file greater than ,%d, are:\n",num);
+  for (l = 0; l < len; l++ ) {
+      printf("%d\n", a[l] );
+      }
+}

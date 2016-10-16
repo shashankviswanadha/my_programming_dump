@@ -1,0 +1,21 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+int to_binary(int decimal){
+  int count = 0;
+  int bin = 0;
+  while (decimal > 1){
+    bin = bin + (decimal % 2) * (int) pow (10,count);
+    decimal = decimal/2;
+    count++;
+  }
+  bin = bin + (decimal % 2) * (int) pow (10,count);
+  return bin;
+}
+
+
+void main(){
+  int test = to_binary(65535);
+  printf("%d\n",test );
+}

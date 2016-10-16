@@ -1,0 +1,8 @@
+import requests
+import sys
+payload = {'username': '14xj00168', 'password': 'Chester)&1'}
+
+with requests.Session(config={'verbose':sys.stderr}) as c:
+    c.post('http://www.mahindraecolecentrale.edu.in/portal/login/index.php', data=payload)
+    r = c.get('http://www.mahindraecolecentrale.edu.in/portal/course/view.php?id=61')
+    print r.content

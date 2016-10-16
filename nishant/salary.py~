@@ -1,0 +1,13 @@
+gross = input("Enter gross salary")
+da = gross*0.5
+hra = gross*0.4
+ta = gross*0.3
+it = gross*0.2
+pf = gross*0.6
+totsal = da+ta+hra+it+pf+gross
+print 'Da = ',da
+print 'hra = ',hra
+print 'ta = ',ta
+print 'it = ',it
+print 'pf = ',pf
+print 'totsal = ',totsal

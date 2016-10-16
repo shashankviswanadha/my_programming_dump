@@ -1,0 +1,4 @@
+import urllib2
+import json
+data = urllib2.urlopen('https://www.youtube.com/watch?v=pxofwuWTs7c')
+print json.loads(data)
