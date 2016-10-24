@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <signal.h>
 
 long to_binary(long decimal){
   int count = 0;
@@ -10,7 +11,7 @@ long to_binary(long decimal){
     decimal = decimal/2;
     count++;
   }
-  bin = bin + (long)((decimal % 2) * (long) pow (10,count));
+  bin = bin + (long)((decimal % 2) * (long)pow (10,count));
   return bin;
 }
 
@@ -57,6 +58,11 @@ struct page_table_entry {
   int valid,present,read,write,execute,dirty,user_kernel;
 };
 
+
+struct tlb_entry{
+  int vpn,pfn,valid,read,write,execute;
+};
+
 int extract_vpn(int virtual_address){
   int VPN_MASK = 64512;
   int SHIFT = 10;
@@ -84,43 +90,96 @@ int get_physical_address(int fr_num,int off){
  
   }
 
+int access_memory(struct page_table_entry *pte,int virtual_address){  //access directly from page table
+  int vpn = extract_vpn(virtual_address);
+  int off = extract_offset(virtual_address);
+  int fn,pa;
+  if (pte[vpn].valid == 0){
+    //raise(SIGSEGV);
+    //RaiseException(SEGMENTATION_FAULT);
+  }
+  else{
+    fn = get_frame_number(pte,virtual_address);
+    pa = get_physical_address(fn,off);
+    return pa;  
+  }
 
-/*void set_page_table_entry(struct page_table_entry pte,int fn,int valid,int protected,int present,int dirty,int user_kernel,int read,int write,int execute){
-  pte.frame_number = fn;
-  pte.valid = valid;
-  pte.protected = protected;
-  pte.present = present;
-  pte.dirty = dirty;
-  pte.user_kernel = user_kernel;
-  pte.read = read;
-  pte.write = write;
-  pte.execute = execute;
+}
 
-  }*/
+int access_mem(struct tlb_entry *tl,struct page_table_entry *pte,int virtual_address){//access from TLB
+  int vpn = extract_vpn(virtual_address);
+  int off = extract_offset(virtual_address);
+  int fn,pa;
+  int i;
+  for (i = 0; i<16; i++){
+    if (pte[vpn].valid == 0){
+    //raise(SIGSEGV);
+    //RaiseException(SEGMENTATION_FAULT);
+    }
+    else{
+      if (tl[i].vpn == vpn){
+        printf("%d%s\n",tl[i].vpn,"yoo" );
+        return get_physical_address(tl[i].pfn,off);
+      }
+    }
+  }
+
+  fn = get_frame_number(pte,virtual_address);
+  int j;
+  for (j = 0;j <15; j++){
+    tl[j] = tl[j+1];
+  }
+  tl[15].vpn = vpn;
+  tl[15].pfn = fn;
+  printf("%d%s\n",tl[15].vpn,"yoyo");
+  if (pte[vpn].valid == 0){
+    //raise(SIGSEGV);
+    //RaiseException(SEGMENTATION_FAULT);
+  }
+  else{
+    return get_physical_address(tl[15].pfn,off);
+  }
+
+}
+
+
+  /*  else if (CanAccess(PTE.ProtectBits) == False)
+      RaiseException(PROTECTION_FAULT)
+      }*/
+
 
 void main(){
   struct page_table_entry *page_table;
+  struct tlb_entry *tlb;
   page_table = (struct page_table_entry*)malloc(sizeof(struct page_table_entry) * 64);
+  tlb = (struct tlb_entry*)malloc(sizeof(struct tlb_entry) * 16);
   int *random_num;
   int i;
-  random_num = random_integers(64,16777216);
+  random_num = random_integers(64,64); //6
   for (i = 0; i < 64; i++){
     page_table[i].frame_number = random_num[i];
     //printf("%d\n",page_table[i].frame_number );
   }
 
-  page_table[20].frame_number = 16777215; 
+  page_table[20].frame_number = 50; 
+  page_table[20].valid = 1;
+  page_table[21].frame_number = 51;
+  page_table[21].valid = 1;
   //20480 is the virtual address for vpn 20
-  int t = extract_vpn(20480);
-  int f = extract_offset(20480);
-  int fn = get_frame_number(page_table,20480);
-  int ph = get_physical_address(fn,f);
-  printf("The virtual address:  %zu\n",to_binary(20480) );
-  printf("VPN:  %zu\n",to_binary(t));
-  printf("Offset:  %zu\n",to_binary(f));
-  printf("Frame number:  %zu\n",to_binary(fn));
+  int ph = access_mem(tlb,page_table,20480);
+  int tr = access_mem(tlb,page_table,21504);
+  //long t = (long)extract_vpn(20481);
+  //long f = (long)extract_offset(20481);
+  //long fn = (long)get_frame_number(page_table,20481);
+  //long ph = (long)get_physical_address(fn,f);
+  //printf("The virtual address:  %zu\n",to_binary(20481) );
+  //printf("VPN:  %zu\n",to_binary(t));
+  //printf("Offset:  %zu\n",to_binary(f));
+  //printf("Frame number:  %zu\n",to_binary(fn));
   printf("Physical address:  %zu\n",to_binary(ph));
- 
+  int t = access_mem(tlb,page_table,20480);
+  printf("Physical address:  %zu\n",to_binary(tr));
+  printf("%d%s\n",tlb[14].vpn,"oooo");
 }
 
 
