@@ -269,21 +269,13 @@ void main(){
   }
 
 
-  //20480 is the virtual address for vpn 20
+  //20480 is the virtual address for vpn 20 and offset 0
+  //21504 is the virtual address for vpn 21 and offset 0
   int ph = AccessMemory(page_dir,tlb,page_table,20480);
   int tr = AccessMemory(page_dir,tlb,page_table,21504);
-  //long t = (long)extract_vpn(20481);
-  //long f = (long)extract_offset(20481);
-  //long fn = (long)get_frame_number(page_table,20481);
-  //long ph = (long)get_physical_address(fn,f);
-  //printf("The virtual address:  %zu\n",to_binary(20481) );
-  //printf("VPN:  %zu\n",to_binary(t));
-  //printf("Offset:  %zu\n",to_binary(f));
-  //printf("Frame number:  %zu\n",to_binary(fn));
   dec2bin(ph);
   int t = AccessMemory(page_dir,tlb,page_table,20480);
   dec2bin(tr);
-  //printf("%d%s\n",tlb[14].vpn,"oooo");
 }
 
 
