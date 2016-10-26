@@ -3,6 +3,23 @@
 #include <math.h>
 #include <signal.h>
 
+void dec2bin(long int decimalNumber){
+long int quotient=decimalNumber;
+    int Temp[100],i=1,j;
+    long int BinaryNum = 0;
+    printf("The Physical Address is ");
+    
+    while(quotient!=0){
+         Temp[i++]= quotient % 2;
+         quotient = quotient / 2;
+    }
+    for(j = i -1 ;j> 0;j--){
+        printf("%d",Temp[j]);
+    }
+    printf("\n");
+}
+
+
 long to_binary(long decimal){
   int count = 0;
   long bin = 0;
@@ -219,7 +236,7 @@ void main(){
   page_dir = (struct page_directory_entry*)malloc(sizeof(struct page_directory_entry) * 16);
   int *random_num;
   int i;
-  random_num = random_integers(64,64); //6
+  random_num = random_integers(64,16384); //6
   for (i = 0; i < 64; i++){
     page_table[i].frame_number = random_num[i];
     //printf("%d\n",page_table[i].frame_number );
@@ -233,7 +250,7 @@ void main(){
 
   page_table[20].frame_number = 50; 
   page_table[20].valid = 1;
-  page_table[21].frame_number = 51;
+  page_table[21].frame_number = 16380;
   page_table[21].valid = 1;
 
   int k,l;
@@ -263,9 +280,9 @@ void main(){
   //printf("VPN:  %zu\n",to_binary(t));
   //printf("Offset:  %zu\n",to_binary(f));
   //printf("Frame number:  %zu\n",to_binary(fn));
-  printf("Physical address:  %zu\n",to_binary(ph));
+  dec2bin(ph);
   int t = AccessMemory(page_dir,tlb,page_table,20480);
-  printf("Physical address:  %zu\n",to_binary(tr));
+  dec2bin(tr);
   //printf("%d%s\n",tlb[14].vpn,"oooo");
 }
 
