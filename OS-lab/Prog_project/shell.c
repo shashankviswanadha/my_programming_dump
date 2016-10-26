@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/resource.h>
 
 /*struct process{
   int pid,background;
@@ -200,19 +201,85 @@ int pidd(char (*allnames)[100],int allpids[100],int no_all,char (*currnames)[100
 }
 
 
-
-void handler(int sig)
-{
-  pid_t pid;
-    int   status;
-    while ((pid = waitpid(-1, &status, WNOHANG)) != -1)
-    {
-         // Or whatever you need to do with the PID
+int hist(char (*allnames)[100],int allpids[100],int no_all,char* arguments[100]){
+  int i;
+  if (arguments[1] == NULL){
+    for (i = 0;i < no_all; i++){
+      printf("%s\n",allnames[i]);
     }
+    return 0;
+  }
+  else{
+    int j = *arguments[1] - '0';
+    for (i = no_all - j; i<no_all; i++){
+      printf("%s\n",allnames[i]);
+    }
+  }
+
+
+
+
 }
 
+char (*curr_names)[100];
+int curr_pid[100];
+int CURR_COUNT ; 
+
+/*void unregister_child(int pid){
+  int i,hit = CURR_COUNT;
+  for (i = 0; i < CURR_COUNT; i++){
+    if (curr_pid[i] = (int)pid){
+      printf("yyyyyy\n");
+      hit = i;
+      break;
+    }
+  }
+  for (i = hit; i < CURR_COUNT - 1; i++){
+    curr_pid[i] = curr_pid[i+1];
+    *curr_names[i] = *curr_names[i+1];
+    
+  }
+  CURR_COUNT--;
+  return;
+  }*/
+
+void handler(char (*allnames)[100],int allpids[100],int no_all)
+{ //printf("yolo\n");
+  int wstat;
+  //union wait wstat;
+  pid_t pid;
+  int status;
+  int i,hit = no_all;
+  while (1) {
+    pid = wait3 (&wstat, WNOHANG, (struct rusage *)NULL  );
+    if (pid == 0)
+      return;
+    else if (pid == -1)
+      return;
+    else{
+      printf("%d  %d\n",pid,no_all);
+      for (i = 0; i < no_all; i++){
+        if (curr_pid[i] = (int)pid){
+          printf("yyyyyy\n");
+          hit = i;
+          break;
+        }
+      }
+      for (i = hit; i < no_all - 1; i++){
+        allpids[i] = allpids[i+1];
+        allnames[i] = allnames[i+1];
+    
+      }
+      no_all --;
+      return ;
+    }
+  }
+
+}
+
+
 void main(){
-  signal(SIGCHLD, handler);
+  //signal(SIGCHLD, handler);
   char* username = getenv("USER");
   char hostname[30];
   gethostname(hostname, 30);
@@ -225,9 +292,14 @@ void main(){
   char (*hist_names)[100] = malloc(sizeof *hist_names * 1024);
   int hist_pid[100];
   int PROCESS_COUNT = 0;
-  char (*curr_names)[100] = malloc(sizeof *curr_names * 1024);
+  curr_names = malloc(sizeof *curr_names * 1024);
   int curr_pid[100];
-  int CURR_COUNT = 0; 
+  int CURR_COUNT = 0;
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_handler = handler(curr_names,curr_pid,CURR_COUNT);
+  sigaction(SIGCHLD, &sa, NULL);
+
   while(1){
     
     printf("%s@%s ~ $ ",username,hostname );
@@ -260,39 +332,47 @@ void main(){
     else{
       args[len] = NULL;
     }
-
+    if(strcmp(args[0],"!hist") == 0) {
+      args[0] = hist_names[(*args[1] - '0') - 1];
+      args[1] = NULL;
+    }
     if (strcmp(args[0],"pid") == 0){
       pidd(hist_names,hist_pid,PROCESS_COUNT,curr_names,curr_pid,CURR_COUNT,args);
-      }
-    else {
-    pid = fork();
-    if(pid == 0){ 
+    }
+    else if(strcmp(args[0],"hist") == 0 ){
+      hist(hist_names,hist_pid,PROCESS_COUNT,args);
+    }
+    else{
+      pid = fork();
+      if(pid == 0){
+        
         execvp(args[0],args);
         fprintf(stderr, "Child process could not do execvp\n");
         //exit(0);
-    }
-    else{
-      if(background == 0){
-        int status = 0;
-        //printf("%d\n",pid );
-
-        if (waitpid(pid,&status,0) == -1){
-          perror( "waitpid" );
+      }
+      else{
+        if(background == 0){
+          int status = 0;
+          //printf("%d\n",pid );
+          
+          if (waitpid(pid,&status,0) == -1){
+            perror( "waitpid" );
+          }
         }
+        strcpy(hist_names[PROCESS_COUNT],args[0]);
+        hist_pid[PROCESS_COUNT] = pid;
+        PROCESS_COUNT++;
+        if (background == 1){
+          strcpy(curr_names[CURR_COUNT],args[0]);
+          curr_pid[CURR_COUNT] = pid;
+          CURR_COUNT++;
+          background = 0;
+        }
+        printf("%d  %d\n",PROCESS_COUNT,CURR_COUNT );
+        //printf("Child exited\n");
+        
+        //printlinkedlist(root);
       }
-      strcpy(hist_names[PROCESS_COUNT],args[0]);
-      hist_pid[PROCESS_COUNT] = pid;
-      PROCESS_COUNT++;
-      if (background == 1){
-        strcpy(curr_names[CURR_COUNT],args[0]);
-        curr_pid[CURR_COUNT] = pid;
-        CURR_COUNT++;
-        background = 0;
-      }
-      //printf("Child exited\n");
-    }
-    //printlinkedlist(root);
-    
     }
     
   }
