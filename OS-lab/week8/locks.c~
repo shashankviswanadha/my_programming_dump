@@ -1,0 +1,36 @@
+#include<stdio.h>
+#include <pthread.h>
+
+typedef struct __myarg_t {
+  int count;
+  int MAX;
+  int array[MAX];
+} myarg_t;
+
+pthread_mutex_t lock;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
+void * mythread(void * arg) {
+  myarg_t * m = (myarg_t * ) arg;
+  if
+  //printf("%d %s\n", m->a, m->b);
+  return NULL;
+}
+
+int main() {
+  pthread_t p;  
+  myarg_t args;
+  int i;
+  args.count = 0;
+  args.MAX = 10
+  for (int i = 0; i < args.MAX; i++){
+    args.array[i] = NULL;
+  }
+  for (int i = 0; i < args.MAX; i++){
+ 
+    pthread_create(&p, NULL, mythread, &args);
+    pthread_join(&p,NULL);
+  
+  }
+  return 0;
+}

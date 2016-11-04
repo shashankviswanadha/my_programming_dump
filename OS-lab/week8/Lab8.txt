@@ -1,0 +1,61 @@
+Lab 8:  Nov 2nd. Programming with Threads : Locking
+
+Template locking code 
+//lock declaration functions
+int pthread_mutex_lock(pthread_mutex_t *mutex);
+int pthread_mutex_unlock(pthread_mutex_t *mutex);
+
+//declaration
+pthread_mutex_t lock;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER; (or dynamic if you prefer)
+
+pthread_mutex_lock(&lock);
+x = x + 1; // or whatever your critical section is
+pthread_mutex_unlock(&lock);
+
+
+#include<stdio.h>
+#include <pthread.h>
+
+ typedef struct __myarg_t {
+ int a;
+ char *b;
+ } myarg_t;
+
+ void * mythread(void * arg) {
+ myarg_t * m = (myarg_t * ) arg;
+ printf("%d %s\n", m->a, m->b);
+ return NULL;
+ }
+
+int main(int argc, char * argv[]) {
+pthread_t p;
+
+myarg_t args;
+args.a = 10;
+args.b = "hello world";
+
+pthread_create(&p, NULL, mythread, &args);
+return 1;
+ }
+
+
+Task 1 : Filling an array with random integers using multiple threads using single mutex.
+
+0. Use above code as template
+a. Initialize a null array of integers of size MAX
+b. Create MAX threads
+c. Each thread should generate a random value (need not be distinct) and fill a distinct non-NULL location in the array.
+d. No two threads should fill the same location, use locks to synchronize the threads appropriately
+
+Hint: We discussed a similar problem in class.
+
+Task 2: Achieve the same using one or more conditional variables.
+
+Question: Which code runs faster?
+
+(Advanced) Task 3 : Create some consumer threads that will read from the array. Two versions are possible.
+
+a. A consumer thread can read from any array location
+b. A consumer thread only reads from a specific array location
+
