@@ -1,0 +1,39 @@
+Lab 9 :  Matrix operations using threads
+
+Task 1. Sorting
+
+a. Generate a random NxN matrix.
+
+b. Create N d. 
+
+c. First the threads should sort the matrix  column-wise
+
+d. Print the result
+
+e. Next, sort the matrix row-wise
+
+f. Print the final output.
+
+Task 2: Adding two NxN matrices.
+
+a. Generate two random NxN matrices
+
+b. Create N threads
+
+c. Each thread should add the corresponding columns of the matrices.
+
+d. Print the result
+
+
+Task 3: Multiplying two NxN matrices
+
+a. Create two random NxN matrices
+
+b. Create N threads
+
+c. Use the N threads to multiply the two matrices.
+
+d. Print the result.
+
+
+Constraint: Use appropriate synchronizing primitives as necessary.

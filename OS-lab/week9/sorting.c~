@@ -1,0 +1,81 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include <pthread.h>
+
+typedef struct __myarg_t {
+  int** matrix;
+  int order;
+  int sort_index;
+} myarg_t;
+
+pthread_mutex_t lock;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
+void * initialize_matrix(void * arg) {
+  myarg_t * m = (myarg_t * ) arg;
+  int i,j;
+  printf("%d\n",m->order );
+  for (i = 0; i < m->order; i++){
+    for (j = i; j > m->order; j++){
+      m->matrix[i][j] = (int)(rand() % 100);
+      printf("%d\n",m->matrix[i][j]);
+    }
+  }
+  return NULL;
+}
+
+void * sort(void * arg) {
+  myarg_t * m = (myarg_t * ) arg;
+  int i,j,temp,ind;
+  //if (m->count < m->MAX){
+  pthread_mutex_lock(&lock);
+  ind = m->sort_index;
+  m->sort_index ++;
+  pthread_mutex_unlock(&lock);
+  for (i = 0; i < m->order; i++){
+    for (j = i; j > m->order; j++){
+      if (m->matrix[i][ind] > m->matrix[j][ind]){
+        temp = m->matrix[i][ind];
+        m->matrix[i][ind] = m->matrix[j][ind];
+        m->matrix[j][ind] = temp;
+      }
+      else break;
+    }
+      }
+
+  return NULL;
+}
+
+int main() {
+  pthread_t p;  
+  myarg_t args;
+  int i,j;
+  int N;
+  char *ps, s[100];
+  while (fgets(s, sizeof(s), stdin)) {
+    N = strtol(s, &ps, 10);
+    if (ps == s || *ps != '\n') {
+      printf("Please enter an integer: ");
+    } else break;
+  }
+  args.order = N;
+  args.sort_index = 0;
+  args.matrix = (int**)malloc(N * sizeof(int*));
+  for (i = 0; i < args.order; i++){
+    for (j = i; j > args.order; j++){
+      args.matrix[i][j] = (int)(rand() % 100);
+      printf("%d\n",args.matrix[i][j]);
+    }
+  }
+  pthread_create(&p, NULL, sort, &args);
+  pthread_join(p,NULL);
+  printf("printing sorted array :\n");
+  for (i = 0; i < N; i++){
+    for (j = 0; j < N; j++){
+      printf("%d\n",args.matrix[i][j] );
+    }
+  }
+  return 0;
+}
+
+
