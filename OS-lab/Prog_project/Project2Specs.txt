@@ -1,0 +1,115 @@
+
+Programming Project -2 : Extending the Interactive Shell 
+
+Important: Project Due Date: November 14nd, 9pm. Monday. There will be no extension per se. If you submit the project late then 20% of the marks will be deducted for each late day. For example, out of the total marks you get 20% will be cut at the time of grading. So if you submit the project 5 days late then, you will not get any credit.
+
+In this project you will extend the unix type shell created in Project-1. The new specifications to be implemented are 5,6, and 7. Remember that the existing specifications must still be functional even after the addition of these new functionality.
+
+Specification -1 : Display requirement
+
+When you execute your code a shell prompt of the following form must appear:
+
+<username@system_name:curr_dir>.
+
+E.g., <manish@research:~>
+
+The directory from which the shell is invoked will be the home directory of the shell and should be indicated by "~"
+
+If the user executes "cd" change dir then the corresponding change must be reflected in the shell as well.
+
+E.g., ./a.out
+<manish@research:~>cd newdir
+<manish@research:~/newdir>
+
+Specification -2 :  User-defined commands
+
+The following commands must be supported by the shell
+-pid : prints the process id of your shell program
+
+E.g., 
+<manish@research:~>pid
+command name: ./a.out  process id: 234
+
+-pid current : prints the list of the process ids of the processes that are created by the shell and currently active
+<manish@research:~>pid current
+List of currently executing processes spawned from this shell:
+command name: emacs   process id: 235
+command name: xbiff   process id: 448
+command name: xcalc   process id: 459
+
+-pid all : prints the list of process ids of all commands that were executed so far by the shell (including the currently executing processes)
+
+
+Specification 4: System commands with and without arguments
+
+All other commands are treated as system commands like : ls, emacs, vi and so on. The shell must be able to execute them either in the backgroud or in the foreground.
+
+--Foreground processes: For example, executing a "vi" command in the foreground implies that your shell will wait for this process to complete and regain control when this process exits.
+
+--Background processes: Any command invoked with "&" is treated as background command. This implies that your shell will spawn that process and doesn't wait for the process to exit. It will keep taking user commands. If the background process  exits then the shell must display the appropriate message to the user.
+
+Specification 5: New user commands 
+ 
+-hist : prints a list of all commands, in chronological order, executed by the shell so far
+
+E.g., 
+<manish@research:~>hist
+1. ls
+2. cd
+3. emacs
+4. xbiff
+5. xcalc
+6. vi
+7. ps
+
+-histn: prints a list of last "n" commands executed by the shell. If the number of commands is less than "n" then the shell should print only the available number of commands. The latest command executed should be displayed at the end, for e.g., "ps" was the latest command executed by the user in the above history.
+
+E.g.,
+<manish@research:~>hist5 (Say print last 5 commands assuming the above history of commands)
+
+1. emacs
+2. xbiff
+3. xcalc
+4. vi
+5. ps
+
+
+-!histn : executes the history command number "n" (assuming the first command is numbered 1)
+
+E.g.,
+<manish@research:~>!hist4 (assuming above history of commands)
+vi
+
+-quit : exits the shell. Your shell should exit only if the user types this "quit" command. It should ignore any other signal from user like : CTRL-D, CTRL-C, SIGINT, SIGCHLD etc.
+
+Specification 6: Implement pipes functionality to implement multiple commands, i.e., output of executing one command is input to another command. Note that there may be more than 2 commands that can be piped
+
+E.g.,
+-<manish@research:~>diff file1.txt file2.txt |  sort | more 
+
+Specification 7: Implement input-output redirection functionality.
+Output of running one(or more) commands must be redirected to a file. Similarly, a command might be prompted to read input data from a file and asked to write output to another file. Appropriate error handling must be done if the output file already exists or if an input file does not exist.
+
+E.g., Output redirection
+--<manish@research:~>diff file1.txt file2.txt >  output.txt 
+
+E.g., Input redirection
+--<manish@research:~>sort < lines.txt
+
+E.g., Input-Output redirection
+--<manish@research:~>sort < lines.txt > sorted-lines.txt
+
+Specification 8:  General notes
+
+1. Use exec family of commands to execute system commands. If the command cannot be run or returns an error it should be handled approiately. Look at perror.h for appropriate routines to handle errors.
+2. Use fork() for creating child processes where needed and wait() for handling child processes
+3. Use signal handlers to process signals from exiting background processes. Marks will be deducted if proper signal handling is not done. Look at Linux manual pages for:
+sigaction (2) 
+http://man7.org/linux/man-pages/man2/rt_sigaction.2.html
+
+4. You can use : uname, hostname, whomai commands to get the shell display working.   
+5. The user can type the command anywhere in the command line i.e., by giving spaces, tabs etc. Your shell should be able to handle such scenarios appropriately. 
+6. If code doesn't compile it is zero marks.
+7. Segmentation faults at the time of grading will be penalized.
+8. You are encouraged to discuss your design first before beginning to code. Use the TA office hours for this purpose.
+9. You can work together but implement your code independently to maximize the learning aspect.  Please adhere to the anti-plagiarism policies of the course and the institute.
