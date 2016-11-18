@@ -1,0 +1,12 @@
+Lab 10:  Workflows: Parallel searching
+
+Input: N- Arrays of different sets of integers (either user supplied or randomly generated),   N random query integers -one for each array
+
+Output: Locations of each integer in each array  (if found).
+
+Task: 
+1. Searching is always preceded by sorting.
+2. Create a single thread to sort each array.
+3. The thread signals a searching thread that will begin searching for the corresponding query integer.
+4. The sorting thread can go back to sorting other arrays after the signaling.5
+. The output of searching thread can be immediately shown after the search is complete.

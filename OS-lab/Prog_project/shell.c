@@ -77,13 +77,18 @@ int CURR_COUNT ;
   return;
   }*/
 
-void my_sigchld_handler(){
+
+int my_sigchld_handler(){
   pid_t pid;
   int   status;
   while ((pid = waitpid(-1, &status, WNOHANG)) != -1){
-    printf("yoloo\n");//printf("%s\n",curr_names[0]);// Or whatever you need to do with the PID
+    printf("signal\n");
+    break;//printf("%s\n",curr_names[0]);// Or whatever you need to do with the PID
   }
-  return;
+  return 1;
+}
+
+void sig_handler(){
 }
 
 
@@ -145,11 +150,16 @@ void main(){
   char pd[1024];
   char *strLocation;
   getcwd(pd,sizeof(pd));
-  printf("%s\n",pd );
   pid_t p;
   int   status;
 
   while(1){
+    int a = 0;
+    a = signal(SIGCHLD, my_sigchld_handler);
+    signal(SIGINT, sig_handler);
+    if (a == 1){
+      continue;
+    }
     pid_t p;
     int   status;
     if (getcwd(cwd,sizeof(cwd)) != NULL){
@@ -177,7 +187,7 @@ void main(){
     token = strtok(inp," ");
     int len=0;
     while(token){
-      if (strcmp(token,"exit") != 0){
+      if (strcmp(token,"quit") != 0){
         args[len] = token;
         token = strtok(NULL," ");
         len++;
@@ -188,7 +198,12 @@ void main(){
       }
     }
     if (ex == 0){
-      exit(0);
+      int p = (int)getpid();
+      int i;
+      for (i = 0; i < CURR_COUNT; i++){
+        kill(curr_pid[i],SIGKILL);
+      }
+      kill(p,SIGKILL);
     }
     if (strcmp(args[len-1],"&") == 0){
       args[len-1] = NULL;
@@ -202,7 +217,7 @@ void main(){
       args[0] = hist_names[(*args[1] - '0') - 1];
       args[1] = NULL;
     }
-    else if (strcmp(args[0],"pid") == 0){
+    if (strcmp(args[0],"pid") == 0){
       pidd(hist_names,hist_pid,PROCESS_COUNT,curr_names,curr_pid,CURR_COUNT,args);
     }
     
