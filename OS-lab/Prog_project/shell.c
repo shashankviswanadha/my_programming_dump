@@ -78,14 +78,25 @@ int CURR_COUNT ;
   }*/
 
 
-int my_sigchld_handler(){
-  pid_t pid;
-  int   status;
-  while ((pid = waitpid(-1, &status, WNOHANG)) != -1){
-    printf("signal\n");
-    break;//printf("%s\n",curr_names[0]);// Or whatever you need to do with the PID
-  }
-  return 1;
+void my_sigchld_handler(int sig,siginfo_t *si, void *context){
+  int i;
+  if(sig == SIGCHLD){
+    //printf("%d\n",CURR_COUNT);
+    //printf("%d\n",curr_pid[0]);
+    //printf("%s\n",curr_names[0] );
+    //printf("%d\n",si->si_pid);
+    for( i = 0 ; i < CURR_COUNT ; i++){
+            if( si->si_pid == curr_pid[i]){
+                int pid;
+                while (pid>0) {
+                    waitpid(curr_pid[i],NULL,0);
+                } 
+                printf("\n%s with pid %d exited\n",curr_names[i],si->si_pid);
+                //pidcurrcount -- ;
+                waitpid(-1,NULL,0);
+            }
+            }
+   }
 }
 
 void sig_handler(){
@@ -128,6 +139,101 @@ void sig_handler(){
 
   }*/
 
+void set_read(int* lpipe)
+{
+    dup2(lpipe[0], STDIN_FILENO);
+    close(lpipe[0]); // we have a copy already, so close it
+    close(lpipe[1]); // not using this end
+    return;
+}
+  
+void set_write(int* rpipe)
+{   printf("right\n" );
+    dup2(rpipe[1], STDOUT_FILENO);
+    close(rpipe[0]); // not using this end
+    close(rpipe[1]); // we have a copy already, so close it
+    return;
+}
+
+struct in
+{int c;
+  
+};
+
+int fork_and_chain(int* lpipe, int* rpipe, struct in *b, char* arg[100])
+{   int ret ;
+    int j;
+    char* temp[100];
+    int pid = fork();
+    if (pid == 0)
+      { printf("yolyo\n");
+        if(lpipe != NULL) {// there's a pipe from the previous process
+            set_read(lpipe);
+        }
+        // else you may want to redirect input from somewhere else for the start
+        
+        printf("gooo\n");
+        
+        if (b->c==0){
+          strcpy(temp[0],arg[0]);
+          for (j = 1;j < 100; j++){
+            if (strcmp(arg[j],"|") != 0){
+              strcpy(temp[j],arg[j]);
+            }
+            else {
+              break;
+            }
+          }
+          printf("jolo:%d\n",j );
+          b->c = j;
+          temp[j] = NULL;
+          execvp(arg[0],temp);
+        }    
+        else{
+          strcpy(temp[0],arg[b->c]);
+          for (j = b->c + 1;j < 100; j++){
+            if (strcmp(arg[j],"|") != 0 || arg[j] != NULL){
+              strcpy(temp[j - b->c],arg[j]);
+            }
+            else {
+              break;
+            }
+          }
+          ret = b->c;
+          b->c = j;
+          printf("J : %d\n",j );
+          temp[b->c - ret] = NULL;
+          execvp(temp[0],temp);
+        }
+        if(rpipe != NULL){ // there's a pipe to the next process
+            set_write(rpipe);
+            
+        }
+        
+        // else you may want to redirect out to somewhere else for the end
+
+        // blah do your stuff
+        // and make sure the child process terminates in here
+        // so it won't continue running the chaining code
+      }
+    else {
+      
+    
+    int status = 0;
+    //printf("%d\n",pid );
+    if (waitpid(pid,&status,0) == -1){
+      perror( "waitpid" );
+    }
+    printf("ret:%d\n",b->c );
+    printf("%s\n",temp[0] );
+    return ret;
+
+    
+   
+    }
+}
+
+struct sigaction sig;
 
 void main(){
   //signal(SIGCHLD, my_sigchld_handler);
@@ -135,6 +241,7 @@ void main(){
   char hostname[30];
   gethostname(hostname, 30);
   char* args[100];
+  char* args1[100];
   char *token;
   char inp[1024];
   int ex = 1;
@@ -151,17 +258,19 @@ void main(){
   char *strLocation;
   getcwd(pd,sizeof(pd));
   pid_t p;
-  int   status;
+  int   status,pipe_count = 0;
+  void my_sigchld_handler(int sig,siginfo_t *si, void *context);
+  sig.sa_flags = SA_SIGINFO;
+  sig.sa_sigaction = my_sigchld_handler;
+  sigaction(SIGCHLD, &sig, NULL);
+  struct in *b = malloc(sizeof(struct in));
 
+
+  int pip[2];
   while(1){
-    int a = 0;
-    a = signal(SIGCHLD, my_sigchld_handler);
-    signal(SIGINT, sig_handler);
-    if (a == 1){
-      continue;
-    }
     pid_t p;
-    int   status;
+    int status;
+    pipe_count = 0;
     if (getcwd(cwd,sizeof(cwd)) != NULL){
       if (strcmp(pd,cwd) == 0){
         fprintf(stdout,"%s@%s ~ > ",username,hostname);
@@ -180,13 +289,19 @@ void main(){
     }
     fgets(inp,1024,stdin);
     size_t length = strlen(inp);
-    if (inp[length - 1] == '\n'){
+    if (inp[0] == '\n'){
+      continue; 
+    }
+    else if (inp[length - 1] == '\n'){
       inp[length - 1] = '\0';    
     }
 
     token = strtok(inp," ");
     int len=0;
     while(token){
+      if (strcmp(token,"|") == 0){
+        pipe_count ++;
+      }
       if (strcmp(token,"quit") != 0){
         args[len] = token;
         token = strtok(NULL," ");
@@ -205,25 +320,63 @@ void main(){
       }
       kill(p,SIGKILL);
     }
-    if (strcmp(args[len-1],"&") == 0){
+    else if (strcmp(args[len-1],"&") == 0){
       args[len-1] = NULL;
       background = 1;
     }
     else{
       args[len] = NULL;
     }
+    if (pipe_count > 0){
+      int lpipe[2], rpipe[2];
+      pipe(rpipe);
+      pipe(lpipe);
+      int prop;
+      b->c = 0;
+      // first child takes input from somewhere else
+      fork_and_chain(NULL, rpipe,b,args);
 
+      // output pipe becomes input for the next process.
+      lpipe[0] = rpipe[0];
+      lpipe[1] = rpipe[1];
+
+      // chain all but the first and last children
+      int i;
+      for(i = 1; i < pipe_count; i++){
+        printf("loop\n");
+        pipe(rpipe); // make the next output pipe
+        fork_and_chain(lpipe,rpipe,b,args);
+        close(lpipe[0]); // both ends are attached, close them on parent
+        close(lpipe[1]);
+        lpipe[0] = rpipe[0]; // output pipe becomes input pipe
+        lpipe[1] = rpipe[1];
+      }
+
+      // fork the last one, its output goes somewhere else      
+      fork_and_chain(lpipe, NULL,b,args);
+      close(lpipe[0]);
+      close(lpipe[1]);
+      
+      strcpy(hist_names[PROCESS_COUNT],args[0]);
+      hist_pid[PROCESS_COUNT] = pid;
+      PROCESS_COUNT++;
+      continue;
+      }
+      
+      
     if(strcmp(args[0],"!hist") == 0) {
       args[0] = hist_names[(*args[1] - '0') - 1];
       args[1] = NULL;
     }
-    if (strcmp(args[0],"pid") == 0){
-      pidd(hist_names,hist_pid,PROCESS_COUNT,curr_names,curr_pid,CURR_COUNT,args);
+    if (strcmp(args[0],"pid") == 0 || strcmp(args[0],"hist") == 0){
+      if (strcmp(args[0],"pid") == 0){
+        pidd(hist_names,hist_pid,PROCESS_COUNT,curr_names,curr_pid,CURR_COUNT,args);
+      }
+      else{
+        hist(hist_names,hist_pid,PROCESS_COUNT,args);
+      }
     }
-    
-    else if(strcmp(args[0],"hist") == 0 ){
-      hist(hist_names,hist_pid,PROCESS_COUNT,args);
-    }
+          
     else{
       pid = fork();
       if(pid == 0){
@@ -265,4 +418,3 @@ void main(){
   }
    
 }
-

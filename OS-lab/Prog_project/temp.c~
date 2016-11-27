@@ -1,0 +1,18 @@
+        printf("count:%d\n",count);
+        int temp = 0;
+        if (count == 0){
+          int i;
+          for (i = 0; i < len; i++){
+            if (strcmp(args[i],"|") == 0){
+              args[i] = NULL;
+              temp = i;
+            }
+          }
+        }
+        if (count > 0){
+          int i;
+          for (i = temp + 1; i < len; i++){
+            strcmp(args[i - temp - 1],args[i]);
+            printf("ylo%s\n",args[0] );
+          }
+        }
